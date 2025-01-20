@@ -6,14 +6,19 @@ from DFT import fft2d
 from STFT import stft
 
 
-
+def rolling(x):
+    a=x[1:,1:]
+    b=x[:-1,:-1]
+    c=x[1:,:-1]
+    d=x[:-1,1:]
+    return (a+b+c+d)/4
 
 
 @click.command()
 @click.argument('img')
-@click.option('--fc', '-f', default=300)
+@click.option('--fc', '-f', default=300.0)
 @click.option('--cutoff', '-c', default=200)
-def IPM(img:str, fc, cutoff):
+def IPM(img:str, fc:float, cutoff):
     #Only for coloured images
     if type(img) == str:
         fig = imread(img)
@@ -22,31 +27,31 @@ def IPM(img:str, fc, cutoff):
 
     
     h, w= fig.shape
-    fft=fft2d(fig)
-    plt.imshow(fft.real)
-    plt.show()
-    plt.imshow(fft.imag)
+    figfft = np.fft.fft(fig[h//2])
+    plt.plot(np.arange(w), figfft.real, 'r', )
+    plt.plot(np.arange(w), figfft.imag, 'b')
+    plt.xticks(np.arange(0, w, 50))
     plt.show()
     vch = np.array([np.arange(w) for i in range(h)])
     vcv = np.array([np.arange(h) for i in range(w)]).T
     vc = vch + vcv
     csin = np.sin(2*np.pi*fc*(vc/h))
     ccos = np.cos(2*np.pi*fc*(vc/h))
-    C = csin
+
     #plt.imshow(np.abs(C))
     #plt.show()
-    I = fig*ccos
+    I = rolling(rolling(fig*ccos))
 
-    Q = fig*csin
+    Q = rolling(rolling(fig*csin))
 
     V = I+Q*1j
-    c = np.reshape(C, (-1, 1))
     v = np.reshape(V, (-1, 1))
+    h, w = V.shape
     phi = np.zeros(h*w)
     for i in range(h*w):
-        phi[i] = np.abs(np.angle(np.dot(v[i], np.conj(c[i]))))
-        if phi[i] < 0:
-            phi[i] += 2*np.pi
+        phi[i] = np.angle(v[i])
+        #if phi[i] < 0:
+        #    phi[i] += 2*np.pi
 
 
     phi = np.reshape(phi, (h, w)) 
