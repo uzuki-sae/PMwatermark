@@ -58,9 +58,7 @@ def IPM(img:str, fc:float, cutoff):
     #plt.imshow(phi)
     #plt.show()
     print(phi)
-    phifft = np.fft.fft(phi[h//2])
-    plt.plot(np.arange(w), phifft.real, 'r')
-    plt.plot(np.arange(w), phifft.imag, 'b')
+    plt.plot(np.arange(w), phi[h//2], 'r')
     plt.show()
 
     plt.imshow(phi)
